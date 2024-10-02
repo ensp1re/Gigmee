@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gigme-mongo
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: gigme-mongo
+  serviceName: gigme-mongo
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gigme-mongo
+    spec:
+      containers:
+      - name: gigme-mongo
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+          name: gigme-mongo
+        volumeMounts:
+        - name: mongo-local-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-local-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc

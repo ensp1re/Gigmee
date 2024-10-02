@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gigme-mysql
+  namespace: production
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gigme-mysql
+  template:
+    metadata:
+      labels:
+        app: gigme-mysql
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: gigme-mysql
+        image: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: api
+        - name: MYSQL_PASSWORD
+          value: api
+        - name: MYSQL_DATABASE
+          value: gigme_auth
+        - name: MYSQL_USER
+          value: 'gigme'
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "0.7"
+          requests:
+            cpu: 100m
+            memory: 150Mi
+        ports:
+        - name: gigme-mysql
+          containerPort: 3306
+        volumeMounts:
+        - name: mysql-local-storage
+          mountPath: /var/lib/mysql
+          subPath: mysql
+        readinessProbe:
+          exec:
+            command:
+              - bash
+              - "-c"
+              - |
+                mysql -h127.0.0.1 -ugigme -papi -e 'SELECT 1'
+          initialDelaySeconds: 120
+          periodSeconds: 300
+          timeoutSeconds: 60
+        livenessProbe:
+          exec:
+            command:
+              - bash
+              - "-c"
+              - |
+                mysqladmin -ugigme -papi ping
+          initialDelaySeconds: 120
+          periodSeconds: 300
+          timeoutSeconds: 60
+      volumes:
+      - name: mysql-local-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc

@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gigme-postgres
+  namespace: production
+spec:
+  selector:
+    matchLabels:
+      app: gigme-postgres
+  template:
+    metadata:
+      labels:
+        app: gigme-postgres
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: gigme-postgres
+          image: postgres
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gigme-backend-secret
+                  key: gigme-postgres-user
+            - name: POSTGRES_DB
+              value: gigme_reviews
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gigme-backend-secret
+                  key: gigme-postgres-password
+            - name: PG_DATA
+              value: /var/lib/postgresql/data/pgdata
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+            requests:
+              cpu: "100m"
+              memory: "150Mi"
+          ports:
+            - name: gigme-postgres
+              containerPort: 5432
+          volumeMounts:
+            - name: postgres-local-storage
+              mountPath: /var/lib/postgresql/data
+              subPath: postgres
+          readinessProbe:
+            exec:
+              command:
+                ["psql", "-U", "gigme", "-d", "gigme_reviews", "-c", "SELECT 1"]
+            initialDelaySeconds: 120
+            periodSeconds: 300
+            timeoutSeconds: 60
+          livenessProbe:
+            exec:
+              command:
+                ["psql", "-U", "gigme", "-d", "gigme_reviews", "-c", "SELECT 1"]
+            initialDelaySeconds: 120
+            periodSeconds: 300
+            timeoutSeconds: 60
+      volumes:
+        - name: postgres-local-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
