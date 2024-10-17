@@ -63,7 +63,7 @@ const HeaderSideBar: FC<IHeaderSideBarProps> = ({
             }}
             className="bg-green-500 border-green-500 cursor-pointer rounded border px-6 py-3 text-base font-semibold text-white transition-all duration-300"
           >
-            Join Jobber
+            Join Gigmee
           </div>
           <div
             onClick={(event: MouseEvent) => {
