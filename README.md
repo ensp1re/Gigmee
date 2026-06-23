@@ -1,4 +1,4 @@
-https://gigmee.live/ is E-Commerce freelance marketplace application.
+Gigmee is E-Commerce freelance marketplace application.
 
 Gigmee client:
 
